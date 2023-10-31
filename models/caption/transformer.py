@@ -129,7 +129,7 @@ class Transformer(BaseCaptioner):
             if return_probs:
                 return outputs, log_probs, all_log_probs
             else:
-                return outputs, log_probs
+                return outputs, log_probs #返回每个句子及其对应的概率
 
     def step(self, timestep, prev_output, samples, seq, mode='teacher_forcing', **kwargs):
         it = None
@@ -205,7 +205,7 @@ class Transformer(BaseCaptioner):
     def iter(self, timestep, samples, outputs, return_probs, batch_size, beam_size=5, eos_idx=3, **kwargs):
         cur_beam_size = 1 if timestep == 0 else beam_size
 
-        word_logprob = self.step(timestep, self.selected_words, samples, None, mode='feedback', **kwargs)
+        word_logprob = self.step(timestep, self.selected_words, samples, None, mode='feedback', **kwargs)#获取当前序列各个单词的概率
         word_logprob = word_logprob.view(batch_size, cur_beam_size, -1)  # [BB V] -> [B Beam V]
         candidate_logprob = self.seq_logprob + word_logprob  # [B Beam V]
 
@@ -252,4 +252,4 @@ class Transformer(BaseCaptioner):
         self.log_probs.append(this_word_logprob)
         self.selected_words = selected_words.view(-1, 1)  # [B*Beam, 1]
 
-        return samples, outputs
+        return samples, outputs #返回图像和新的输出序列
