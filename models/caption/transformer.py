@@ -92,7 +92,7 @@ class Transformer(BaseCaptioner):
             outputs = []
 
             with self.statefulness(batch_size):
-                for timestep in range(max_len):
+                for timestep in range(max_len): #逐步获取单词
                     images, outputs = self.iter(
                         timestep=timestep,
                         samples=images,
