@@ -136,17 +136,17 @@ class Transformer(BaseCaptioner):
         if mode == 'teacher_forcing':
             raise NotImplementedError
         elif mode == 'feedback':
-            if timestep == 0:
+            if timestep == 0:#如果是第0步，就先提取图片的视觉特征
                 if not self.cached_features:
                     vis_inputs = self.detector(samples)
                 else:
                     vis_inputs = samples
 
-                if self.config.model.use_gri_feat:
+                if self.config.model.use_gri_feat:#获得网格特征
                     self.gri_feat, self.gri_mask = self.grid_net(vis_inputs['gri_feat'], vis_inputs['gri_mask'])
                     self.gri_feat = self.gri_feat[:, -1]
 
-                if self.config.model.use_reg_feat:
+                if self.config.model.use_reg_feat:#获得区域特征
                     self.reg_feat = vis_inputs['reg_feat']
                     self.reg_mask = vis_inputs['reg_mask']
 
@@ -154,10 +154,11 @@ class Transformer(BaseCaptioner):
                 # Else t > 0, enc_output = [BB, N, D], it = prev_output (t-1) = [BB, 1]
                 _feat = getattr(self, 'gri_feat', self.reg_feat)
                 it = _feat.data.new_full((_feat.shape[0], 1), self.bos_idx).long()
-            else:
+            else:#如果不是第0步，就保持原来的output
                 it = prev_output
 
         vis_inputs = {}
+        #从self复制一遍vis_inputs，供给cap_generator使用
         if self.config.model.use_gri_feat:
             vis_inputs['gri_feat'] = self.gri_feat
             vis_inputs['gri_mask'] = self.gri_mask
@@ -166,7 +167,7 @@ class Transformer(BaseCaptioner):
             vis_inputs['reg_feat'] = self.reg_feat
             vis_inputs['reg_mask'] = self.reg_mask
 
-        return self.cap_generator(it, vis_inputs)
+        return self.cap_generator(it, vis_inputs)#获得下一个预测的单词的特征表达
 
     def get_bs_device(self, samples):
         if isinstance(samples, dict):
