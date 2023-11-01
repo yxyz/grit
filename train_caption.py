@@ -36,7 +36,7 @@ def main(gpu, config):
 
     # extract features
     detector = build_detector(config).to(device)
-    detector.load_state_dict(torch.load(config.model.detector.checkpoint)['model'], strict=False)
+    detector.load_state_dict(torch.load(config.model.detector.checkpoint)['model'], strict=False) #训练的时候就要使用预训练的目标检测器
 
     model = Transformer(detector=detector, config=config)
     model = model.to(device)
@@ -45,7 +45,7 @@ def main(gpu, config):
     best_cider_val = 0.0
     best_cider_test = 0.0
 
-    if start_epoch < config.optimizer.freezing_xe_epochs:
+    if start_epoch < config.optimizer.freezing_xe_epochs: #如果当前开始训练的迭代数小于freezing_xe阶段的总迭代数，先把backbone和detector都冻住
         if getattr(config.optimizer, 'freeze_backbone', False):
             for n, p in model.named_parameters():
                 if 'backbone' in n:
